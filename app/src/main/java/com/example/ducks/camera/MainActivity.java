@@ -35,8 +35,8 @@ public class MainActivity extends Activity {
                 try {
                     c = Camera.open(); // attempt to get a Camera instance
                     c.release();
-                    //Start start = new Start();
-                    //start.execute().get();
+                    Start start = new Start();
+                    start.execute().get();
                     NewThread newThread = new NewThread();
                     newThread.execute();
                 } catch (Exception e) {
