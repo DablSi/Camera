@@ -78,8 +78,9 @@ public class MainActivity extends Activity {
                     }
                 }
 
-                Log.e("PHOTO", linkedList.get(0).x + ";" + linkedList.get(0).y
-                        + " " + linkedList.get(linkedList.size() - 1).x + ";" + linkedList.get(linkedList.size() - 1).y);
+                if (linkedList.size() > 0)
+                    Log.e("PHOTO", linkedList.get(0).x + ";" + linkedList.get(0).y
+                            + " " + linkedList.get(linkedList.size() - 1).x + ";" + linkedList.get(linkedList.size() - 1).y);
             }
             return null;
         }
