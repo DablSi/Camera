@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,7 +49,7 @@ public class MainActivity extends Activity {
 
     }
 
-    class NewThread extends AsyncTask<Void, Void, Void>{
+    class NewThread extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
@@ -56,34 +57,35 @@ public class MainActivity extends Activity {
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
             File photoFile = new File("/storage/emulated/legacy/Pictures/Screen.jpg");
 
-            if(photoFile.exists()){
+            if (photoFile.exists()) {
                 FileInputStream fileInputStream = null;
                 try {
-                     fileInputStream = new FileInputStream(photoFile);
+                    fileInputStream = new FileInputStream(photoFile);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
 
                 Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
-                LinkedList<Integer> linkedList = new LinkedList<>();
+                LinkedList<Point> linkedList = new LinkedList<>();
 
-                for(int i = 1; i < bitmap.getHeight(); i++){
-                    for(int j =1; j < bitmap.getWidth(); j++){
+                for (int i = 0; i < bitmap.getHeight(); i++) {
+                    for (int j = 0; j < bitmap.getWidth(); j++) {
                         int n = bitmap.getPixel(j, i);
                         int num = 0xffffb900;
-                        if(n < num + 100 && n > num - 100){
-                            linkedList.add(n);
+                        if (n < num + 100 && n > num - 100) {
+                            linkedList.add(new Point(i, j));
                         }
                     }
                 }
 
-                Log.e("PHOTO", linkedList.size() + "");
+                Log.e("PHOTO", linkedList.get(0).x + ";" + linkedList.get(0).y
+                        + " " + linkedList.get(linkedList.size() - 1).x + ";" + linkedList.get(linkedList.size() - 1).y);
             }
             return null;
         }
     }
 
-    class Start extends AsyncTask<Void, Void, Void>{
+    class Start extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
