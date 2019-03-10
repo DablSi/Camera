@@ -1,5 +1,6 @@
 package com.example.ducks.camera;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -8,11 +9,13 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -22,6 +25,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class MainActivity extends Activity {
+
+    Bitmap bitmap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +44,9 @@ public class MainActivity extends Activity {
                     Start start = new Start();
                     start.execute().get();
                     NewThread newThread = new NewThread();
-                    newThread.execute();
+                    newThread.execute().get();
+                    ImageView imageView = findViewById(R.id.image);
+                    //imageView.setImageBitmap(bitmap);
                 } catch (Exception e) {
                     // Camera is not available (in use or does not exist)
                     Toast.makeText(MainActivity.this, "Camera is not available", Toast.LENGTH_LONG).show();
@@ -51,6 +59,7 @@ public class MainActivity extends Activity {
 
     class NewThread extends AsyncTask<Void, Void, Void> {
 
+        @TargetApi(Build.VERSION_CODES.KITKAT)
         @Override
         protected Void doInBackground(Void... voids) {
             File pictures = Environment
@@ -65,14 +74,15 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
 
-                Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
+                bitmap = BitmapFactory.decodeStream(fileInputStream);
+                bitmap = Bitmap.createScaledBitmap(bitmap, 640, 360, false);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
                         int n = bitmap.getPixel(j, i);
-                        int num = 0xffffb900;
-                        if (n < num + 100 && n > num - 100) {
+                        int num = 0xFF303F9F;
+                        if (n < num + 1000 && n > num - 1000) {
                             linkedList.add(new Point(i, j));
                         }
                     }
