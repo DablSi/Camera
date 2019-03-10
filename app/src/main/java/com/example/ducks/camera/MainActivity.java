@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
         protected Void doInBackground(Void... voids) {
             File pictures = Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            File photoFile = new File("/storage/emulated/legacy/Pictures/Screen.jpg");
+            File photoFile = new File(pictures, "Screen.jpg");
 
             if (photoFile.exists()) {
                 FileInputStream fileInputStream = null;
