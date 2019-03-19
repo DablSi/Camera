@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 public class MainActivity extends Activity {
 
@@ -41,12 +44,7 @@ public class MainActivity extends Activity {
                 try {
                     c = Camera.open(); // attempt to get a Camera instance
                     c.release();
-                    Start start = new Start();
-                    start.execute().get();
-                    NewThread newThread = new NewThread();
-                    newThread.execute().get();
-                    ImageView imageView = findViewById(R.id.image);
-                    //imageView.setImageBitmap(bitmap);
+                    startActivityForResult(new Intent(MainActivity.this, Main2Activity.class), 1);
                 } catch (Exception e) {
                     // Camera is not available (in use or does not exist)
                     Toast.makeText(MainActivity.this, "Camera is not available", Toast.LENGTH_LONG).show();
@@ -57,9 +55,14 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        NewThread newThread = new NewThread();
+        newThread.execute();
+    }
+
     class NewThread extends AsyncTask<Void, Void, Void> {
 
-        @TargetApi(Build.VERSION_CODES.KITKAT)
         @Override
         protected Void doInBackground(Void... voids) {
             File pictures = Environment
@@ -80,27 +83,42 @@ public class MainActivity extends Activity {
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
-                        int n = bitmap.getPixel(j, i);
-                        int num = 0xFF303F9F;
-                        if (n < num + 1000 && n > num - 1000) {
-                            linkedList.add(new Point(i, j));
+                        Color is = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                            is = Color.valueOf(bitmap.getPixel(j, i));
+                            Color need = Color.valueOf(0xFF303F9F);
+                            if (is.red() + 25 >= need.red() && is.red() - 25 <= need.red()
+                                    && is.green() + 25 >= need.green() && is.green() - 25 <= need.green()
+                                    && is.blue() + 25 >= need.blue() && is.blue() - 25 <= need.blue()) {
+                                linkedList.add(new Point(i, j));
+                            }
                         }
                     }
                 }
 
-                if (linkedList.size() > 0)
-                    Log.e("PHOTO", linkedList.get(0).x + ";" + linkedList.get(0).y
-                            + " " + linkedList.get(linkedList.size() - 1).x + ";" + linkedList.get(linkedList.size() - 1).y);
+                if (linkedList.size() > 0) {
+                    TreeMap<Integer, LinkedList<Integer>> treeMap = new TreeMap<>();
+                    for (Point i : linkedList) {
+                        if (treeMap.containsKey(i.x)) {
+                            treeMap.get(i.x).add(i.y);
+                        } else {
+                            treeMap.put(i.x, new LinkedList<Integer>());
+                            treeMap.get(i.x).add(i.y);
+                        }
+                    }
+                    int j = 0, a = 0;
+                    for (int i : treeMap.keySet()) {
+                        a += treeMap.get(i).size();
+                        j++;
+                    }
+                    for (int i : treeMap.keySet()) {
+                        if (treeMap.get(i).size() != a / j)
+                            treeMap.remove(i);
+                    }
+                    Log.e("PHOTO", Collections.min(treeMap.keySet()) + ";" + treeMap.get(Collections.min(treeMap.keySet())).get(0)
+                            + " " + Collections.max(treeMap.keySet()) + ";" + treeMap.get(Collections.max(treeMap.keySet())).get(0));
+                }
             }
-            return null;
-        }
-    }
-
-    class Start extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            startService(new Intent(MainActivity.this, Photo.class));
             return null;
         }
     }
