@@ -90,32 +90,38 @@ public class MainActivity extends Activity {
                 bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
-                int need = 0xFF303F9F;
-                float[] hsv2 = new float[3];
-                Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
-                int need2 = 0xFF303F10;
-                float[] hsv3 = new float[3];
-                Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
                         int is = bitmap.getPixel(j, i);
                         float[] hsv = new float[3];
                         Color.RGBToHSV(Color.red(is), Color.green(is), Color.blue(is), hsv);
 
-                        if (Math.abs(hsv[0] - hsv2[0]) <= 16 && Math.abs(hsv[1] - hsv2[1]) <= 0.3 && Math.abs(hsv[2] - hsv2[2]) <= 0.25) {
+                        int need = 0xff303f10;
+                        float[] hsv2 = new float[3];
+                        Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
+                        if (Math.abs(hsv[0] - hsv2[0]) <= 14 && Math.abs(hsv[1] - hsv2[1]) <= 0.35 && Math.abs(hsv[2] - hsv2[2]) <= 0.35
+                                && Math.abs(Color.red(is) - Color.red(need)) <= 95
+                                && Math.abs(Color.blue(is) - Color.blue(need)) <= 95
+                                && Math.abs(Color.green(is) - Color.green(need)) <= 95) {
                             linkedList.add(new Point(i, j));
                             bitmap.setPixel(j, i, Color.RED);
                         }
 
-                        if (Math.abs(hsv[0] - hsv3[0]) <= 16 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3) {
-                            bitmap.setPixel(j, i, Color.GREEN);
-                        }
+                        /*int need2 = 0xff303f9f;
+                        float[] hsv3 = new float[3];
+                        Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
+                        if (Math.abs(hsv[0] - hsv3[0]) <= 14 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3
+                                && Math.abs(Color.red(is) - Color.red(need2)) <= 95
+                                && Math.abs(Color.blue(is) - Color.blue(need2)) <= 95
+                                && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
+                            bitmap.setPixel(j, i, Color.WHITE);
+                        }*/
                     }
                 }
 
                 if (linkedList.size() > 0) {
                     TreeMap<Integer, LinkedList<Integer>> treeMap = new TreeMap<>();
-                    /*for (Point i : linkedList) {
+                    for (Point i : linkedList) {
                         if (treeMap.containsKey(i.x)) {
                             treeMap.get(i.x).add(i.y);
                         } else {
@@ -133,9 +139,9 @@ public class MainActivity extends Activity {
                         Map.Entry<Integer, LinkedList<Integer>> item = (Map.Entry<Integer, LinkedList<Integer>>) it.next();
                         if (item.getValue().size() != a / j)
                             it.remove();
-                    }*/
-                    Log.e("PHOTO", linkedList.get(0)
-                            + " " + linkedList.get(linkedList.size()-1));
+                    }
+                    Log.e("PHOTO", Collections.min(treeMap.keySet()) + ";" + treeMap.get(Collections.min(treeMap.keySet())).get(0)
+                            + " " + Collections.max(treeMap.keySet()) + ";" + treeMap.get(Collections.max(treeMap.keySet())).get(0));
                 }
             }
             return null;
