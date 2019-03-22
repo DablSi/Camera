@@ -109,35 +109,6 @@ public class Main2Activity extends Activity {
             }
         });
 
-        SurfaceView surfaceView1 = findViewById(R.id.draw);
-        surfaceView1.setZOrderMediaOverlay(true);
-
-        SurfaceHolder surfaceHolder1 = surfaceView1.getHolder();
-        surfaceHolder1.setFormat(PixelFormat.TRANSLUCENT);
-
-        surfaceHolder1.addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Canvas canvas = holder.lockCanvas();
-                Paint paint = new Paint(Color.BLUE);
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(10);
-                canvas.drawRect(0, 0, xs, ys, paint);
-                holder.unlockCanvasAndPost(canvas);
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-
-            }
-        });
-
-
         Button button = findViewById(R.id.btnTakePicture);
         button.setOnClickListener(new View.OnClickListener() {
             @Override

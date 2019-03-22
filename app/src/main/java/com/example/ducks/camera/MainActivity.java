@@ -115,6 +115,7 @@ public class MainActivity extends Activity {
                 }
 
                 bitmap = BitmapFactory.decodeStream(fileInputStream);
+                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
@@ -125,6 +126,7 @@ public class MainActivity extends Activity {
                         int d = (Math.abs(Color.red(is) - Color.red(need)) + Math.abs(Color.green(is) - Color.green(need)) + Math.abs(Color.blue(is) - Color.blue(need)));
                         if (d <= 150) {
                             linkedList.add(new Point(i, j));
+                            bitmap.setPixel(j, i, Color.RED);
                         }
                     }
                 }
