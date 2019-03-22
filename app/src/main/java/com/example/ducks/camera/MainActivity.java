@@ -1,8 +1,10 @@
 package com.example.ducks.camera;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.*;
 import android.hardware.Camera;
 import android.os.AsyncTask;
@@ -10,6 +12,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +36,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+                //ask for authorisation
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 50);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+                //ask for authorisation
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 50);
+
         Button btn = findViewById(R.id.btnTakePicture);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,47 +63,6 @@ public class MainActivity extends Activity {
 
 
     }
-
-    /*int normalize() {
-        int sz = 32;
-        if (xs < sz) return 0;
-        if (ys < sz) return 0;
-        int x, y, c, c0, c1, c00, c01, c10, c11, cavg;
-
-        // compute average intensity in corners
-        for (c00 = 0, y = 0; y < sz; y++) for (x = 0; x < sz; x++) c00 += p[y][x].dd;
-        c00 /= sz * sz;
-        for (c01 = 0, y = 0; y < sz; y++) for (x = xs - sz; x < xs; x++) c01 += p[y][x].dd;
-        c01 /= sz * sz;
-        for (c10 = 0, y = ys - sz; y < ys; y++) for (x = 0; x < sz; x++) c10 += p[y][x].dd;
-        c10 /= sz * sz;
-        for (c11 = 0, y = ys - sz; y < ys; y++) for (x = xs - sz; x < xs; x++) c11 += p[y][x].dd;
-        c11 /= sz * sz;
-        cavg = (c00 + c01 + c10 + c11) / 4;
-
-        // normalize lighting conditions
-        for (y = 0; y < ys; y++)
-            for (x = 0; x < xs; x++) {
-                // avg color = bilinear interpolation of corners colors
-                c0 = c00 + (((c01 - c00) * x) / xs);
-                c1 = c10 + (((c11 - c10) * x) / xs);
-                c = c0 + (((c1 - c0) * y) / ys);
-                // scale to avg color
-                if (c) p[y][x].dd = (p[y][x].dd * cavg) / c;
-            }
-        // compute min max intensities
-        for (c0 = 0, c1 = 0, y = 0; y < ys; y++)
-            for (x = 0; x < xs; x++) {
-                c = p[y][x].dd;
-                if (c0 > c) c0 = c;
-                if (c1 < c) c1 = c;
-            }
-        // maximize dynamic range <0,765>
-        for (y = 0; y < ys; y++)
-            for (x = 0; x < xs; x++)
-                c = ((p[y][x].dd - c0) * 765) / (c1 - c0);
-        return cavg;
-    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -118,22 +90,32 @@ public class MainActivity extends Activity {
                 bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
+                int need = 0xFF303F9F;
+                float[] hsv2 = new float[3];
+                Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
+                int need2 = 0xFF303F10;
+                float[] hsv3 = new float[3];
+                Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
                         int is = bitmap.getPixel(j, i);
-                        int need = 0xFF303F9F;
-                        // r - 48  g - 63 b - 15
-                        int d = (Math.abs(Color.red(is) - Color.red(need)) + Math.abs(Color.green(is) - Color.green(need)) + Math.abs(Color.blue(is) - Color.blue(need)));
-                        if (d <= 150) {
+                        float[] hsv = new float[3];
+                        Color.RGBToHSV(Color.red(is), Color.green(is), Color.blue(is), hsv);
+
+                        if (Math.abs(hsv[0] - hsv2[0]) <= 16 && Math.abs(hsv[1] - hsv2[1]) <= 0.3 && Math.abs(hsv[2] - hsv2[2]) <= 0.25) {
                             linkedList.add(new Point(i, j));
                             bitmap.setPixel(j, i, Color.RED);
+                        }
+
+                        if (Math.abs(hsv[0] - hsv3[0]) <= 16 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3) {
+                            bitmap.setPixel(j, i, Color.GREEN);
                         }
                     }
                 }
 
                 if (linkedList.size() > 0) {
                     TreeMap<Integer, LinkedList<Integer>> treeMap = new TreeMap<>();
-                    for (Point i : linkedList) {
+                    /*for (Point i : linkedList) {
                         if (treeMap.containsKey(i.x)) {
                             treeMap.get(i.x).add(i.y);
                         } else {
@@ -151,9 +133,9 @@ public class MainActivity extends Activity {
                         Map.Entry<Integer, LinkedList<Integer>> item = (Map.Entry<Integer, LinkedList<Integer>>) it.next();
                         if (item.getValue().size() != a / j)
                             it.remove();
-                    }
-                    Log.e("PHOTO", Collections.min(treeMap.keySet()) + ";" + treeMap.get(Collections.min(treeMap.keySet())).get(0)
-                            + " " + Collections.max(treeMap.keySet()) + ";" + treeMap.get(Collections.max(treeMap.keySet())).get(0));
+                    }*/
+                    Log.e("PHOTO", linkedList.get(0)
+                            + " " + linkedList.get(linkedList.size()-1));
                 }
             }
             return null;
