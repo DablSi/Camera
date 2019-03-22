@@ -1,9 +1,14 @@
 package com.example.ducks.camera;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
+import android.content.res.Configuration;
+import android.graphics.*;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.media.CamcorderProfile;
@@ -20,8 +25,8 @@ public class Main2Activity extends Activity {
 
     SurfaceView surfaceView;
     Camera camera;
-
-    File photoFile;
+    private final int xs = 640, ys = 360;
+    public File photoFile;
 
     public static void setCameraDisplayOrientation(Activity activity, android.hardware.Camera camera) {
 
@@ -72,6 +77,20 @@ public class Main2Activity extends Activity {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 try {
+                    Camera.Parameters params = camera.getParameters();
+
+                    if (params.getMaxNumMeteringAreas() > 0) { // check that metering areas are supported
+                        List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
+
+                        Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
+                        meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
+                        Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
+                        meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
+                        params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                        params.setMeteringAreas(meteringAreas);
+                    }
+
+                    camera.setParameters(params);
                     setCameraDisplayOrientation(Main2Activity.this, camera);
                     camera.setPreviewDisplay(holder);
                     camera.startPreview();
@@ -90,6 +109,34 @@ public class Main2Activity extends Activity {
             }
         });
 
+        SurfaceView surfaceView1 = findViewById(R.id.draw);
+        surfaceView1.setZOrderMediaOverlay(true);
+
+        SurfaceHolder surfaceHolder1 = surfaceView1.getHolder();
+        surfaceHolder1.setFormat(PixelFormat.TRANSLUCENT);
+
+        surfaceHolder1.addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                Canvas canvas = holder.lockCanvas();
+                Paint paint = new Paint(Color.BLUE);
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(10);
+                canvas.drawRect(0, 0, xs, ys, paint);
+                holder.unlockCanvasAndPost(canvas);
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+
+            }
+        });
+
 
         Button button = findViewById(R.id.btnTakePicture);
         button.setOnClickListener(new View.OnClickListener() {
@@ -100,7 +147,18 @@ public class Main2Activity extends Activity {
                     public void onPictureTaken(byte[] data, Camera camera) {
                         try {
                             FileOutputStream fos = new FileOutputStream(photoFile);
-                            fos.write(data);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                            Matrix matrix = new Matrix();
+                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                matrix.postRotate(90);
+                            }
+                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                            bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                            byte[] arr = stream.toByteArray();
+                            fos.write(arr);
                             fos.close();
                             setResult(1);
                             finish();

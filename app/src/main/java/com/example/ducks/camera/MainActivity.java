@@ -3,10 +3,7 @@ package com.example.ducks.camera;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Point;
+import android.graphics.*;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,13 +20,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.TreeMap;
+import java.util.*;
 
 public class MainActivity extends Activity {
 
     Bitmap bitmap;
+    private final int xs = 640, ys = 360;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +51,47 @@ public class MainActivity extends Activity {
 
     }
 
+    /*int normalize() {
+        int sz = 32;
+        if (xs < sz) return 0;
+        if (ys < sz) return 0;
+        int x, y, c, c0, c1, c00, c01, c10, c11, cavg;
+
+        // compute average intensity in corners
+        for (c00 = 0, y = 0; y < sz; y++) for (x = 0; x < sz; x++) c00 += p[y][x].dd;
+        c00 /= sz * sz;
+        for (c01 = 0, y = 0; y < sz; y++) for (x = xs - sz; x < xs; x++) c01 += p[y][x].dd;
+        c01 /= sz * sz;
+        for (c10 = 0, y = ys - sz; y < ys; y++) for (x = 0; x < sz; x++) c10 += p[y][x].dd;
+        c10 /= sz * sz;
+        for (c11 = 0, y = ys - sz; y < ys; y++) for (x = xs - sz; x < xs; x++) c11 += p[y][x].dd;
+        c11 /= sz * sz;
+        cavg = (c00 + c01 + c10 + c11) / 4;
+
+        // normalize lighting conditions
+        for (y = 0; y < ys; y++)
+            for (x = 0; x < xs; x++) {
+                // avg color = bilinear interpolation of corners colors
+                c0 = c00 + (((c01 - c00) * x) / xs);
+                c1 = c10 + (((c11 - c10) * x) / xs);
+                c = c0 + (((c1 - c0) * y) / ys);
+                // scale to avg color
+                if (c) p[y][x].dd = (p[y][x].dd * cavg) / c;
+            }
+        // compute min max intensities
+        for (c0 = 0, c1 = 0, y = 0; y < ys; y++)
+            for (x = 0; x < xs; x++) {
+                c = p[y][x].dd;
+                if (c0 > c) c0 = c;
+                if (c1 < c) c1 = c;
+            }
+        // maximize dynamic range <0,765>
+        for (y = 0; y < ys; y++)
+            for (x = 0; x < xs; x++)
+                c = ((p[y][x].dd - c0) * 765) / (c1 - c0);
+        return cavg;
+    }*/
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         NewThread newThread = new NewThread();
@@ -78,20 +115,16 @@ public class MainActivity extends Activity {
                 }
 
                 bitmap = BitmapFactory.decodeStream(fileInputStream);
-                bitmap = Bitmap.createScaledBitmap(bitmap, 640, 360, false);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
-                        Color is = null;
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                            is = Color.valueOf(bitmap.getPixel(j, i));
-                            Color need = Color.valueOf(0xFF303F9F);
-                            if (is.red() + 25 >= need.red() && is.red() - 25 <= need.red()
-                                    && is.green() + 25 >= need.green() && is.green() - 25 <= need.green()
-                                    && is.blue() + 25 >= need.blue() && is.blue() - 25 <= need.blue()) {
-                                linkedList.add(new Point(i, j));
-                            }
+                        int is = bitmap.getPixel(j, i);
+                        int need = 0xFF303F9F;
+                        // r - 48  g - 63 b - 15
+                        int d = (Math.abs(Color.red(is) - Color.red(need)) + Math.abs(Color.green(is) - Color.green(need)) + Math.abs(Color.blue(is) - Color.blue(need)));
+                        if (d <= 150) {
+                            linkedList.add(new Point(i, j));
                         }
                     }
                 }
@@ -111,9 +144,11 @@ public class MainActivity extends Activity {
                         a += treeMap.get(i).size();
                         j++;
                     }
-                    for (int i : treeMap.keySet()) {
-                        if (treeMap.get(i).size() != a / j)
-                            treeMap.remove(i);
+                    Iterator it = treeMap.entrySet().iterator();
+                    while (it.hasNext()) {
+                        Map.Entry<Integer, LinkedList<Integer>> item = (Map.Entry<Integer, LinkedList<Integer>>) it.next();
+                        if (item.getValue().size() != a / j)
+                            it.remove();
                     }
                     Log.e("PHOTO", Collections.min(treeMap.keySet()) + ";" + treeMap.get(Collections.min(treeMap.keySet())).get(0)
                             + " " + Collections.max(treeMap.keySet()) + ";" + treeMap.get(Collections.max(treeMap.keySet())).get(0));

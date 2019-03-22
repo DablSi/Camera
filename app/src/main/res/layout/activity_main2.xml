@@ -6,12 +6,22 @@
         android:orientation="vertical"
         android:layout_height="match_parent"
         tools:context=".Main2Activity">
-    <SurfaceView
-            android:id="@+id/surfaceView"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="match_parent">
-    </SurfaceView>
+
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_weight="1"
+                 android:layout_height="match_parent">
+
+        <SurfaceView
+                android:id="@+id/surfaceView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+        </SurfaceView>
+
+        <SurfaceView android:layout_width="match_parent"
+                     android:layout_height="match_parent"
+                     android:id="@+id/draw"/>
+    </FrameLayout>
+
     <Button
             android:id="@+id/btnTakePicture"
             android:layout_width="match_parent"
