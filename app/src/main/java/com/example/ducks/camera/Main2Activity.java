@@ -27,7 +27,8 @@ public class Main2Activity extends Activity {
     private final int xs = 640, ys = 360;
     public File photoFile, photoFile2;
     FileOutputStream fos;
-    Bitmap bitmap, bitmap2;
+    Bitmap bitmap;
+    long t;
 
     public static void setCameraDisplayOrientation(Activity activity, android.hardware.Camera camera) {
 
@@ -76,6 +77,7 @@ public class Main2Activity extends Activity {
         surfaceView = findViewById(R.id.surfaceView);
 
         SurfaceHolder holder = surfaceView.getHolder();
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
@@ -102,6 +104,7 @@ public class Main2Activity extends Activity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                t = System.currentTimeMillis();
                 camera.takePicture(null, null, new PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
@@ -113,12 +116,42 @@ public class Main2Activity extends Activity {
                                 camera.release();
                             camera = Camera.open();
                             camera.startPreview();
+                            Camera.Parameters cameraParameters = camera.getParameters();
+                            //set color efects to none
+                            cameraParameters.setColorEffect(Camera.Parameters.EFFECT_NONE);
+
+                            //set antibanding to none
+                            if (cameraParameters.getAntibanding() != null) {
+                                cameraParameters.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
+                            }
+
+                            // set white ballance
+                            if (cameraParameters.getWhiteBalance() != null) {
+                                cameraParameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT);
+                            }
+
+                            //set flash
+                            if (cameraParameters.getFlashMode() != null) {
+                                cameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                            }
+
+                            //set zoom
+                            if (cameraParameters.isZoomSupported()) {
+                                cameraParameters.setZoom(0);
+                            }
+
+                            //set focus mode
+                            cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+
+                            camera.setParameters(cameraParameters);
+
                             camera.takePicture(null, null, new PictureCallback() {
                                 @Override
                                 public void onPictureTaken(byte[] data, Camera camera) {
                                     try {
-                                        FileOutputStream fos = new FileOutputStream(photoFile2);
                                         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                        t = System.currentTimeMillis() - t;
+                                        FileOutputStream fos = new FileOutputStream(photoFile2);
                                         int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
                                         Matrix matrix = new Matrix();
                                         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
