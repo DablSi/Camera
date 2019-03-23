@@ -1,9 +1,6 @@
 package com.example.ducks.camera;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +11,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Surface;
@@ -29,6 +27,7 @@ public class Main2Activity extends Activity {
     private final int xs = 640, ys = 360;
     public File photoFile, photoFile2;
     FileOutputStream fos;
+    Bitmap bitmap, bitmap2;
 
     public static void setCameraDisplayOrientation(Activity activity, android.hardware.Camera camera) {
 
@@ -74,7 +73,6 @@ public class Main2Activity extends Activity {
         photoFile2 = new File(pictures, "Screen2.jpg");
 
 
-
         surfaceView = findViewById(R.id.surfaceView);
 
         SurfaceHolder holder = surfaceView.getHolder();
@@ -82,20 +80,6 @@ public class Main2Activity extends Activity {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 try {
-                    Camera.Parameters params = camera.getParameters();
-
-                    if (params.getMaxNumMeteringAreas() > 0) { // check that metering areas are supported
-                        List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
-
-                        Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
-                        meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
-                        Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
-                        meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
-                        params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                        params.setMeteringAreas(meteringAreas);
-                    }
-
-                    camera.setParameters(params);
                     setCameraDisplayOrientation(Main2Activity.this, camera);
                     camera.setPreviewDisplay(holder);
                     camera.startPreview();
@@ -122,58 +106,45 @@ public class Main2Activity extends Activity {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
                         try {
-                            fos = new FileOutputStream(photoFile);
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
-                            Matrix matrix = new Matrix();
-                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                matrix.postRotate(90);
-                            }
-                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                            byte[] arr = stream.toByteArray();
-                            fos.write(arr);
+                            bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            NewThread newThread = new NewThread();
+                            newThread.execute();
+                            if (camera != null)
+                                camera.release();
+                            camera = Camera.open();
+                            camera.startPreview();
+                            camera.takePicture(null, null, new PictureCallback() {
+                                @Override
+                                public void onPictureTaken(byte[] data, Camera camera) {
+                                    try {
+                                        FileOutputStream fos = new FileOutputStream(photoFile2);
+                                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                        int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                                        Matrix matrix = new Matrix();
+                                        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                            matrix.postRotate(90);
+                                        }
+                                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                                        bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                        byte[] arr = stream.toByteArray();
+                                        fos.write(arr);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    } finally {
+                                        try {
+                                            fos.close();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        setResult(1);
+                                        finish();
+                                    }
+                                }
+                            });
                         } catch (Exception e) {
                             e.printStackTrace();
-                        } finally {
-                            try {
-                                fos.close();
-                                fos = null;
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                });
-                camera.takePicture(null, null, new PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        try {
-                            fos = new FileOutputStream(photoFile2);
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
-                            Matrix matrix = new Matrix();
-                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                matrix.postRotate(90);
-                            }
-                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                            byte[] arr = stream.toByteArray();
-                            fos.write(arr);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            try {
-                                fos.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            setResult(1);
-                            finish();
                         }
                     }
                 });
@@ -195,4 +166,27 @@ public class Main2Activity extends Activity {
         camera = null;
     }
 
+    class NewThread extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                fos = new FileOutputStream(photoFile);
+                int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                Matrix matrix = new Matrix();
+                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    matrix.postRotate(90);
+                }
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] arr = stream.toByteArray();
+                fos.write(arr);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
 }

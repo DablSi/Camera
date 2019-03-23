@@ -96,29 +96,29 @@ public class MainActivity extends Activity {
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
                         if (bitmap.getPixel(j, i) != bitmap2.getPixel(j, i)) {
-                            int is = bitmap.getPixel(j, i);
+                            int is = bitmap2.getPixel(j, i);
                             float[] hsv = new float[3];
                             Color.RGBToHSV(Color.red(is), Color.green(is), Color.blue(is), hsv);
                             int need = 0xff303f10;
                             float[] hsv2 = new float[3];
                             Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
-                            if (Math.abs(hsv[0] - hsv2[0]) <= 14 && Math.abs(hsv[1] - hsv2[1]) <= 0.35 && Math.abs(hsv[2] - hsv2[2]) <= 0.35
+                            if (Math.abs(hsv[0] - hsv2[0]) <= 16 && Math.abs(hsv[1] - hsv2[1]) <= 0.35 && Math.abs(hsv[2] - hsv2[2]) <= 0.35
                                     && Math.abs(Color.red(is) - Color.red(need)) <= 95
                                     && Math.abs(Color.blue(is) - Color.blue(need)) <= 95
                                     && Math.abs(Color.green(is) - Color.green(need)) <= 95) {
                                 linkedList.add(new Point(i, j));
-                                bitmap.setPixel(j, i, Color.RED);
+                                bitmap2.setPixel(j, i, Color.RED);
                             }
 
-                        /*int need2 = 0xff303f9f;
+                        int need2 = 0xff303f9f;
                         float[] hsv3 = new float[3];
                         Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
                         if (Math.abs(hsv[0] - hsv3[0]) <= 14 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3
                                 && Math.abs(Color.red(is) - Color.red(need2)) <= 95
                                 && Math.abs(Color.blue(is) - Color.blue(need2)) <= 95
                                 && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
-                            bitmap.setPixel(j, i, Color.WHITE);
-                        }*/
+                            bitmap2.setPixel(j, i, Color.WHITE);
+                        }
                         }
                     }
                 }

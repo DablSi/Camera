@@ -7,13 +7,6 @@
         android:layout_height="match_parent"
         tools:context=".Main2Activity">
 
-        <SurfaceView
-                android:id="@+id/surfaceView"
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-        </SurfaceView>
-
     <Button
             android:id="@+id/btnTakePicture"
             android:layout_width="match_parent"
@@ -21,4 +14,12 @@
             android:layout_height="match_parent"
             android:text="@string/take_picture">
     </Button>
+
+    <SurfaceView
+            android:id="@+id/surfaceView"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+    </SurfaceView>
+
 </LinearLayout>
