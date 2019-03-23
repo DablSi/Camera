@@ -28,7 +28,7 @@ import java.util.*;
 
 public class MainActivity extends Activity {
 
-    Bitmap bitmap;
+    Bitmap bitmap, bitmap2;
     private final int xs = 640, ys = 360;
 
     @Override
@@ -77,35 +77,38 @@ public class MainActivity extends Activity {
             File pictures = Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
             File photoFile = new File(pictures, "Screen.jpg");
+            File photoFile2 = new File(pictures, "Screen2.jpg");
 
-            if (photoFile.exists()) {
-                FileInputStream fileInputStream = null;
+            if (photoFile.exists() && photoFile2.exists()) {
+                FileInputStream fileInputStream = null, fileInputStream2 = null;
                 try {
                     fileInputStream = new FileInputStream(photoFile);
+                    fileInputStream2 = new FileInputStream(photoFile2);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
 
                 bitmap = BitmapFactory.decodeStream(fileInputStream);
-                bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                bitmap2 = BitmapFactory.decodeStream(fileInputStream2);
+                bitmap2 = bitmap2.copy(Bitmap.Config.ARGB_8888, true);
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
                     for (int j = 0; j < bitmap.getWidth(); j++) {
-                        int is = bitmap.getPixel(j, i);
-                        float[] hsv = new float[3];
-                        Color.RGBToHSV(Color.red(is), Color.green(is), Color.blue(is), hsv);
-
-                        int need = 0xff303f10;
-                        float[] hsv2 = new float[3];
-                        Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
-                        if (Math.abs(hsv[0] - hsv2[0]) <= 14 && Math.abs(hsv[1] - hsv2[1]) <= 0.35 && Math.abs(hsv[2] - hsv2[2]) <= 0.35
-                                && Math.abs(Color.red(is) - Color.red(need)) <= 95
-                                && Math.abs(Color.blue(is) - Color.blue(need)) <= 95
-                                && Math.abs(Color.green(is) - Color.green(need)) <= 95) {
-                            linkedList.add(new Point(i, j));
-                            bitmap.setPixel(j, i, Color.RED);
-                        }
+                        if (bitmap.getPixel(j, i) != bitmap2.getPixel(j, i)) {
+                            int is = bitmap.getPixel(j, i);
+                            float[] hsv = new float[3];
+                            Color.RGBToHSV(Color.red(is), Color.green(is), Color.blue(is), hsv);
+                            int need = 0xff303f10;
+                            float[] hsv2 = new float[3];
+                            Color.RGBToHSV(Color.red(need), Color.green(need), Color.blue(need), hsv2);
+                            if (Math.abs(hsv[0] - hsv2[0]) <= 14 && Math.abs(hsv[1] - hsv2[1]) <= 0.35 && Math.abs(hsv[2] - hsv2[2]) <= 0.35
+                                    && Math.abs(Color.red(is) - Color.red(need)) <= 95
+                                    && Math.abs(Color.blue(is) - Color.blue(need)) <= 95
+                                    && Math.abs(Color.green(is) - Color.green(need)) <= 95) {
+                                linkedList.add(new Point(i, j));
+                                bitmap.setPixel(j, i, Color.RED);
+                            }
 
                         /*int need2 = 0xff303f9f;
                         float[] hsv3 = new float[3];
@@ -116,6 +119,7 @@ public class MainActivity extends Activity {
                                 && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
                             bitmap.setPixel(j, i, Color.WHITE);
                         }*/
+                        }
                     }
                 }
 

@@ -3,6 +3,7 @@ package com.example.ducks.camera;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,8 @@ public class Main2Activity extends Activity {
     SurfaceView surfaceView;
     Camera camera;
     private final int xs = 640, ys = 360;
-    public File photoFile;
+    public File photoFile, photoFile2;
+    FileOutputStream fos;
 
     public static void setCameraDisplayOrientation(Activity activity, android.hardware.Camera camera) {
 
@@ -69,6 +71,9 @@ public class Main2Activity extends Activity {
         File pictures = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         photoFile = new File(pictures, "Screen.jpg");
+        photoFile2 = new File(pictures, "Screen2.jpg");
+
+
 
         surfaceView = findViewById(R.id.surfaceView);
 
@@ -117,7 +122,7 @@ public class Main2Activity extends Activity {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
                         try {
-                            FileOutputStream fos = new FileOutputStream(photoFile);
+                            fos = new FileOutputStream(photoFile);
                             Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                             int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
                             Matrix matrix = new Matrix();
@@ -130,11 +135,45 @@ public class Main2Activity extends Activity {
                             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
                             byte[] arr = stream.toByteArray();
                             fos.write(arr);
-                            fos.close();
-                            setResult(1);
-                            finish();
                         } catch (Exception e) {
                             e.printStackTrace();
+                        } finally {
+                            try {
+                                fos.close();
+                                fos = null;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+                camera.takePicture(null, null, new PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        try {
+                            fos = new FileOutputStream(photoFile2);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                            Matrix matrix = new Matrix();
+                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                matrix.postRotate(90);
+                            }
+                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                            bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                            byte[] arr = stream.toByteArray();
+                            fos.write(arr);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                fos.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            setResult(1);
+                            finish();
                         }
                     }
                 });
