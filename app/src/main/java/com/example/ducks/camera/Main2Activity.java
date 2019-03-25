@@ -1,26 +1,27 @@
 package com.example.ducks.camera;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import android.app.Activity;
 import android.content.res.Configuration;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
-import android.media.CamcorderProfile;
-import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 
-public class Main2Activity extends Activity {
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class Main2Activity extends AppCompatActivity {
 
     SurfaceView surfaceView;
     Camera camera;
@@ -30,7 +31,7 @@ public class Main2Activity extends Activity {
     Bitmap bitmap;
     long t;
 
-    public static void setCameraDisplayOrientation(Activity activity, android.hardware.Camera camera) {
+    public static void setCameraDisplayOrientation(AppCompatActivity activity, android.hardware.Camera camera) {
 
         android.hardware.Camera.CameraInfo info =
                 new android.hardware.Camera.CameraInfo();

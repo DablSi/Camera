@@ -1,2 +1,2 @@
 # Camera
-Get the rect of simular color from photo
+Get the rect of similar color from photo

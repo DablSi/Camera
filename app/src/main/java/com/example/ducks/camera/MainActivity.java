@@ -1,32 +1,31 @@
 package com.example.ducks.camera;
 
 import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.*;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     Bitmap bitmap, bitmap2;
     private final int xs = 640, ys = 360;
@@ -53,7 +52,8 @@ public class MainActivity extends Activity {
                 try {
                     c = Camera.open(); // attempt to get a Camera instance
                     c.release();
-                    startActivityForResult(new Intent(MainActivity.this, Main2Activity.class), 1);
+                    //startActivityForResult(new Intent(MainActivity.this, Main2Activity.class), 1);
+                    startActivityForResult(new Intent(MainActivity.this, Camera2.class), 1);
                 } catch (Exception e) {
                     // Camera is not available (in use or does not exist)
                     Toast.makeText(MainActivity.this, "Camera is not available", Toast.LENGTH_LONG).show();

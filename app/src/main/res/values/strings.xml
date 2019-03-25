@@ -1,6 +1,4 @@
 <resources>
     <string name="app_name">Camera</string>
-    <string name="take_picture">Picture</string>
-    <string name="start_record">Start</string>
-    <string name="stop_record">Stop</string>
+    <string name="take_picture">Picture</string>\
 </resources>
