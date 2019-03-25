@@ -4,6 +4,7 @@ package com.example.ducks.camera;
 import android.Manifest;
 import android.app.assist.AssistStructure;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.*;
@@ -15,10 +16,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.util.Size;
-import android.util.SizeF;
-import android.util.SparseIntArray;
+import android.util.*;
 import android.view.Display;
 import android.view.Surface;
 import android.view.TextureView;
@@ -30,8 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
-
-import static android.hardware.camera2.CameraDevice.TEMPLATE_STILL_CAPTURE;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Camera2 extends AppCompatActivity {
@@ -50,37 +46,6 @@ public class Camera2 extends AppCompatActivity {
     private CaptureRequest captureRequest;
     private Size previewSize;
     private File galleryFolder, galleryFolder2;
-    private int deviceRotation;
-    private CameraCharacteristics cameraCharacteristics;
-    private int sensorOrientation;
-    private static final SparseIntArray ORIENTATIONS = new SparseIntArray(4);
-
-    static {
-        ORIENTATIONS.append(Surface.ROTATION_0, 90);
-        ORIENTATIONS.append(Surface.ROTATION_90, 0);
-        ORIENTATIONS.append(Surface.ROTATION_180, 270);
-        ORIENTATIONS.append(Surface.ROTATION_270, 180);
-    }
-
-    private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
-        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
-        int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
-
-        // Round device orientation to a multiple of 90
-        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
-
-        // Reverse device orientation for front-facing cameras
-        boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
-        if (facingFront) deviceOrientation = -deviceOrientation;
-
-        // Calculate desired JPEG orientation relative to camera orientation to make
-        // the image upright relative to the device orientation
-        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
-
-        return jpegOrientation;
-    }
-
-    private int surfaceRotation;
 
     private Size chooseOptimalSize(Size[] outputSizes, int width, int height) {
         double preferredRatio = height / (double) width;
@@ -100,9 +65,8 @@ public class Camera2 extends AppCompatActivity {
     private void setUpCamera() {
         try {
             for (String cameraId : cameraManager.getCameraIdList()) {
-                cameraCharacteristics =
+                CameraCharacteristics cameraCharacteristics =
                         cameraManager.getCameraCharacteristics(cameraId);
-                sensorOrientation =  cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 if (cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) ==
                         cameraFacing) {
                     StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(
@@ -111,10 +75,7 @@ public class Camera2 extends AppCompatActivity {
                     Point size = new Point();
                     display.getSize(size);
                     int rotation = getWindowManager().getDefaultDisplay().getRotation();
-                    if (rotation == 1)
-                        previewSize = chooseOptimalSize(streamConfigurationMap.getOutputSizes(SurfaceTexture.class), size.y, size.x);
-                    else
-                        previewSize = chooseOptimalSize(streamConfigurationMap.getOutputSizes(SurfaceTexture.class), size.x, size.y);
+                    previewSize = chooseOptimalSize(streamConfigurationMap.getOutputSizes(SurfaceTexture.class), size.y, size.x);
                     this.cameraId = cameraId;
                 }
             }
@@ -145,11 +106,12 @@ public class Camera2 extends AppCompatActivity {
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
             surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
             Surface previewSurface = new Surface(surfaceTexture);
-            captureRequestBuilder = cameraDevice.createCaptureRequest(TEMPLATE_STILL_CAPTURE);
+            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(previewSurface);
-            captureRequestBuilder.set(
-                    CaptureRequest.JPEG_ORIENTATION,
-                    getJpegOrientation(cameraCharacteristics, deviceRotation));
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_ON);
+
+            fixDarkPreview();
 
             cameraDevice.createCaptureSession(Collections.singletonList(previewSurface),
                     new CameraCaptureSession.StateCallback() {
@@ -216,8 +178,6 @@ public class Camera2 extends AppCompatActivity {
         setContentView(R.layout.activity_camera2);
 
         textureView = findViewById(R.id.texture_view);
-        deviceRotation = Camera2.this.getWindowManager().getDefaultDisplay().getRotation();
-        surfaceRotation = ORIENTATIONS.get(deviceRotation);
 
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
 
@@ -248,7 +208,7 @@ public class Camera2 extends AppCompatActivity {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
                 setUpCamera();
-                transformImage(width, height);
+                //transformImage(width, height);
                 openCamera();
             }
 
@@ -276,9 +236,11 @@ public class Camera2 extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         openBackgroundThread();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         if (textureView.isAvailable()) {
             setUpCamera();
-            transformImage(textureView.getWidth(), textureView.getHeight());
+            //transformImage(textureView.getWidth(), textureView.getHeight());
             openCamera();
         } else {
             textureView.setSurfaceTextureListener(surfaceTextureListener);
@@ -288,6 +250,7 @@ public class Camera2 extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         closeCamera();
         closeBackgroundThread();
     }
@@ -338,26 +301,18 @@ public class Camera2 extends AppCompatActivity {
         }
     }
 
-    private void transformImage(int width, int height) {
-        if(previewSize == null || textureView == null) {
-            return;
-        }
-        Matrix matrix = new Matrix();
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-        RectF textureRectF = new RectF(0, 0, width, height);
-        RectF previewRectF = new RectF(0, 0, previewSize.getHeight(), previewSize.getWidth());
-        float centerX = textureRectF.centerX();
-        float centerY = textureRectF.centerY();
-        if(rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
-            previewRectF.offset(centerX - previewRectF.centerX(),
-                    centerY - previewRectF.centerY());
-            matrix.setRectToRect(textureRectF, previewRectF, Matrix.ScaleToFit.FILL);
-            float scale = Math.max((float)width / previewSize.getWidth(),
-                    (float)height / previewSize.getHeight());
-            matrix.postScale(scale, scale, centerX, centerY);
-            matrix.postRotate(90 * (rotation - 2), centerX, centerY);
-        }
-        textureView.setTransform(matrix);
+    private void fixDarkPreview() throws CameraAccessException {
+        Range<Integer>[] autoExposureFPSRanges = cameraManager
+                .getCameraCharacteristics(cameraId)
+                .get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
 
+        if (autoExposureFPSRanges != null) {
+            for (Range<Integer> autoExposureRange : autoExposureFPSRanges) {
+                if (autoExposureRange.equals(Range.create(15, 30))) {
+                    captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE,
+                            Range.create(15, 30));
+                }
+            }
+        }
     }
 }
