@@ -74,7 +74,6 @@ public class Camera2 extends AppCompatActivity {
                     Display display = getWindowManager().getDefaultDisplay();
                     Point size = new Point();
                     display.getSize(size);
-                    int rotation = getWindowManager().getDefaultDisplay().getRotation();
                     previewSize = chooseOptimalSize(streamConfigurationMap.getOutputSizes(SurfaceTexture.class), size.y, size.x);
                     this.cameraId = cameraId;
                 }
@@ -207,9 +206,8 @@ public class Camera2 extends AppCompatActivity {
         surfaceTextureListener = new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-                setUpCamera();
-                //transformImage(width, height);
-                openCamera();
+//                setUpCamera();
+//                openCamera();
             }
 
             @Override
@@ -291,6 +289,7 @@ public class Camera2 extends AppCompatActivity {
             e.printStackTrace();
         } finally {
             unlock();
+            finish();
             try {
                 if (outputPhoto != null) {
                     outputPhoto.close();

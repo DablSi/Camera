@@ -3,10 +3,8 @@ package com.example.ducks.camera;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Point;
+import android.content.res.Configuration;
+import android.graphics.*;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -89,8 +87,22 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 bitmap = BitmapFactory.decodeStream(fileInputStream);
+                int orientation = MainActivity.this.getResources().getConfiguration().orientation;
+                Matrix matrix = new Matrix();
+                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    matrix.postRotate(-90);
+                }
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
                 bitmap2 = BitmapFactory.decodeStream(fileInputStream2);
                 bitmap2 = bitmap2.copy(Bitmap.Config.ARGB_8888, true);
+                matrix = new Matrix();
+                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    matrix.postRotate(-90);
+                }
+                bitmap2 = Bitmap.createBitmap(bitmap2, 0, 0, bitmap2.getWidth(), bitmap2.getHeight(), matrix, true);
+                bitmap2 = Bitmap.createScaledBitmap(bitmap2, xs, ys, false);
+
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
