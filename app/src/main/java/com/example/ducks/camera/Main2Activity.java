@@ -109,76 +109,38 @@ public class Main2Activity extends AppCompatActivity {
                 camera.takePicture(null, null, new PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
+                        bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    }
+                });
+                camera.startPreview();
+                camera.takePicture(null, null, new PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
                         try {
-                            bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            NewThread newThread = new NewThread();
-                            newThread.execute();
-                            if (camera != null)
-                                camera.release();
-                            camera = Camera.open();
-                            camera.startPreview();
-                            Camera.Parameters cameraParameters = camera.getParameters();
-                            //set color efects to none
-                            cameraParameters.setColorEffect(Camera.Parameters.EFFECT_NONE);
-
-                            //set antibanding to none
-                            if (cameraParameters.getAntibanding() != null) {
-                                cameraParameters.setAntibanding(Camera.Parameters.ANTIBANDING_OFF);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            t = System.currentTimeMillis() - t;
+                            FileOutputStream fos = new FileOutputStream(photoFile2);
+                            int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                            Matrix matrix = new Matrix();
+                            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                                matrix.postRotate(90);
                             }
-
-                            // set white ballance
-                            if (cameraParameters.getWhiteBalance() != null) {
-                                cameraParameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT);
-                            }
-
-                            //set flash
-                            if (cameraParameters.getFlashMode() != null) {
-                                cameraParameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                            }
-
-                            //set zoom
-                            if (cameraParameters.isZoomSupported()) {
-                                cameraParameters.setZoom(0);
-                            }
-
-                            //set focus mode
-                            cameraParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
-
-                            camera.setParameters(cameraParameters);
-
-                            camera.takePicture(null, null, new PictureCallback() {
-                                @Override
-                                public void onPictureTaken(byte[] data, Camera camera) {
-                                    try {
-                                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                                        t = System.currentTimeMillis() - t;
-                                        FileOutputStream fos = new FileOutputStream(photoFile2);
-                                        int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
-                                        Matrix matrix = new Matrix();
-                                        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                            matrix.postRotate(90);
-                                        }
-                                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                                        bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
-                                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                                        byte[] arr = stream.toByteArray();
-                                        fos.write(arr);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    } finally {
-                                        try {
-                                            fos.close();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        setResult(1);
-                                        finish();
-                                    }
-                                }
-                            });
+                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                            bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                            byte[] arr = stream.toByteArray();
+                            fos.write(arr);
                         } catch (Exception e) {
                             e.printStackTrace();
+                        } finally {
+                            try {
+                                fos.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            setResult(1);
+                            finish();
                         }
                     }
                 });
@@ -186,41 +148,41 @@ public class Main2Activity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        camera = Camera.open();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (camera != null)
-            camera.release();
-        camera = null;
-    }
-
-    class NewThread extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onResume () {
+            super.onResume();
+            camera = Camera.open();
+        }
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                fos = new FileOutputStream(photoFile);
-                int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
-                Matrix matrix = new Matrix();
-                if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    matrix.postRotate(90);
+        protected void onPause () {
+            super.onPause();
+            if (camera != null)
+                camera.release();
+            camera = null;
+        }
+
+        class NewThread extends AsyncTask<Void, Void, Void> {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    fos = new FileOutputStream(photoFile);
+                    int orientation = Main2Activity.this.getResources().getConfiguration().orientation;
+                    Matrix matrix = new Matrix();
+                    if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        matrix.postRotate(90);
+                    }
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                    bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                    byte[] arr = stream.toByteArray();
+                    fos.write(arr);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                bitmap = Bitmap.createScaledBitmap(bitmap, xs, ys, false);
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] arr = stream.toByteArray();
-                fos.write(arr);
-            } catch (Exception e) {
-                e.printStackTrace();
+                return null;
             }
-            return null;
         }
     }
-}

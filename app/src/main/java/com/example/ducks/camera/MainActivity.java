@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     c = Camera.open(); // attempt to get a Camera instance
                     c.release();
-                    //startActivityForResult(new Intent(MainActivity.this, Main2Activity.class), 1);
-                    startActivityForResult(new Intent(MainActivity.this, Camera2.class), 1);
+                    //startService(new Intent(MainActivity.this, Photo.class));
+                    startActivityForResult(new Intent(MainActivity.this, AndroidCameraApi.class), 1);
                 } catch (Exception e) {
                     // Camera is not available (in use or does not exist)
                     Toast.makeText(MainActivity.this, "Camera is not available", Toast.LENGTH_LONG).show();
@@ -122,21 +122,21 @@ public class MainActivity extends AppCompatActivity {
                                 bitmap2.setPixel(j, i, Color.RED);
                             }
 
-                        int need2 = 0xff303f9f;
-                        float[] hsv3 = new float[3];
-                        Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
-                        if (Math.abs(hsv[0] - hsv3[0]) <= 14 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3
-                                && Math.abs(Color.red(is) - Color.red(need2)) <= 95
-                                && Math.abs(Color.blue(is) - Color.blue(need2)) <= 95
-                                && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
-                            bitmap2.setPixel(j, i, Color.WHITE);
-                        }
+                            int need2 = 0xff303f9f;
+                            float[] hsv3 = new float[3];
+                            Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
+                            if (Math.abs(hsv[0] - hsv3[0]) <= 14 && Math.abs(hsv[1] - hsv3[1]) <= 0.3 && Math.abs(hsv[2] - hsv3[2]) <= 0.3
+                                    && Math.abs(Color.red(is) - Color.red(need2)) <= 95
+                                    && Math.abs(Color.blue(is) - Color.blue(need2)) <= 95
+                                    && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
+                                bitmap2.setPixel(j, i, Color.WHITE);
+                            }
                         }
                     }
                 }
 
+                TreeMap<Integer, LinkedList<Integer>> treeMap = new TreeMap<>();
                 if (linkedList.size() > 0) {
-                    TreeMap<Integer, LinkedList<Integer>> treeMap = new TreeMap<>();
                     for (Point i : linkedList) {
                         if (treeMap.containsKey(i.x)) {
                             treeMap.get(i.x).add(i.y);

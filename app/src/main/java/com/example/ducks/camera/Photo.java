@@ -45,6 +45,9 @@ public class Photo extends Service {
             //set camera parameters
             mCamera.setParameters(parameters);
             mCamera.startPreview();
+            long t = System.currentTimeMillis();
+            mCamera.takePicture(null, null, mCall);
+            t = System.currentTimeMillis() - t;
             mCamera.takePicture(null, null, mCall);
 
         } catch (IOException e) {
@@ -64,20 +67,20 @@ public class Photo extends Service {
         public void onPictureTaken(byte[] data, Camera camera) {
             //decode the data obtained by the camera into a Bitmap
 
-            FileOutputStream outStream = null;
-            try {
-                File pictures = Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-                File photoFile = new File(pictures, "Screen.jpg");
-                outStream = new FileOutputStream(photoFile);
-                outStream.write(data);
-                outStream.close();
-                stopSelf();
-            } catch (FileNotFoundException e) {
-                Log.d("CAMERA", e.getMessage());
-            } catch (IOException e) {
-                Log.d("CAMERA", e.getMessage());
-            }
+//            FileOutputStream outStream = null;
+//            try {
+////                File pictures = Environment
+////                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+////                File photoFile = new File(pictures, "Screen.jpg");
+////                outStream = new FileOutputStream(photoFile);
+////                outStream.write(data);
+////                outStream.close();
+////                stopSelf();
+//            } catch (FileNotFoundException e) {
+//                Log.d("CAMERA", e.getMessage());
+//            } catch (IOException e) {
+//                Log.d("CAMERA", e.getMessage());
+//            }
 
         }
     };

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="com.example.ducks.camera">
 
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -31,6 +32,8 @@
         <activity android:name=".Main2Activity">
         </activity>
         <activity android:name=".Camera2">
+        </activity>
+        <activity android:name=".AndroidCameraApi">
         </activity>
     </application>
 

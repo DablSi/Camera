@@ -11,6 +11,8 @@ import android.graphics.*;
 import android.hardware.camera2.*;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ExifInterface;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.*;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
@@ -24,6 +26,7 @@ import android.view.View;
 import android.widget.Button;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -44,8 +47,11 @@ public class Camera2 extends AppCompatActivity {
     private CameraCaptureSession cameraCaptureSession;
     private CaptureRequest.Builder captureRequestBuilder;
     private CaptureRequest captureRequest;
+    private ImageReader mImageReader;
     private Size previewSize;
     private File galleryFolder, galleryFolder2;
+
+
 
     private Size chooseOptimalSize(Size[] outputSizes, int width, int height) {
         double preferredRatio = height / (double) width;
@@ -274,21 +280,23 @@ public class Camera2 extends AppCompatActivity {
     }
 
     public void fab(View view) {
-        lock();
-        FileOutputStream outputPhoto = null, outputPhoto2 = null;
-        try {
+        //lock();
+        //FileOutputStream outputPhoto = null, outputPhoto2 = null;
+        /*try {
             createImageGallery();
             outputPhoto = new FileOutputStream(galleryFolder);
             outputPhoto2 = new FileOutputStream(galleryFolder2);
+            long t = System.currentTimeMillis();
             textureView.getBitmap()
                     .compress(Bitmap.CompressFormat.PNG, 100, outputPhoto);
-            Thread.sleep(10);
+            t = System.currentTimeMillis() - t;
+            Thread.sleep(1000);
             textureView.getBitmap()
                     .compress(Bitmap.CompressFormat.PNG, 100, outputPhoto2);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            unlock();
+            //unlock();
             finish();
             try {
                 if (outputPhoto != null) {
@@ -297,7 +305,8 @@ public class Camera2 extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
+
     }
 
     private void fixDarkPreview() throws CameraAccessException {

@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion  28
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.ducks.camera"
         minSdkVersion 15
