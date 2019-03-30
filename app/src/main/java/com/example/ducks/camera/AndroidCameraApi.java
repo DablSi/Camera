@@ -46,6 +46,7 @@ public class AndroidCameraApi extends AppCompatActivity {
     private Button takePictureButton;
     private TextureView textureView;
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+    boolean isFirst = true;
     private byte[] bytes;
 
     static {
@@ -63,7 +64,7 @@ public class AndroidCameraApi extends AppCompatActivity {
     protected CaptureRequest.Builder captureRequestBuilder;
     private Size imageDimension;
     private ImageReader imageReader;
-    private File file;
+    private File file, file2;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
     private Handler mBackgroundHandler;
@@ -167,7 +168,7 @@ public class AndroidCameraApi extends AppCompatActivity {
             }
             int width = 640;
             int height = 480;
-            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.YUV_420_888, 2);
+            ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 2);
             List<Surface> outputSurfaces = new ArrayList<Surface>(2);
             outputSurfaces.add(reader.getSurface());
             outputSurfaces.add(new Surface(textureView.getSurfaceTexture()));
@@ -180,6 +181,7 @@ public class AndroidCameraApi extends AppCompatActivity {
             File pictures = Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
             file = new File(pictures, "Screen.jpg");
+            file2 = new File(pictures, "Screen2.jpg");
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
@@ -357,15 +359,19 @@ public class AndroidCameraApi extends AppCompatActivity {
         super.onPause();
     }
 
-    class NewThread extends AsyncTask<Void, Void, Void>{
+    class NewThread extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
             OutputStream output = null;
             try {
-                output = new FileOutputStream(file);
+                if (isFirst) {
+                    output = new FileOutputStream(file);
+                    isFirst = false;
+                } else
+                    output = new FileOutputStream(file2);
                 output.write(bytes);
-            } catch (Exception e){
+            } catch (Exception e) {
 
             } finally {
                 if (null != output) {
