@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                     c = Camera.open(); // attempt to get a Camera instance
                     c.release();
                     //startService(new Intent(MainActivity.this, Photo.class));
-                    startActivityForResult(new Intent(MainActivity.this, AndroidCameraApi.class), 1);
+                    startActivityForResult(new Intent(MainActivity.this,  Camera2.class), 1);
                 } catch (Exception e) {
                     // Camera is not available (in use or does not exist)
                     Toast.makeText(MainActivity.this, "Camera is not available", Toast.LENGTH_LONG).show();
@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         NewThread newThread = new NewThread();
-        newThread.execute();
+        //newThread.execute();
     }
 
     class NewThread extends AsyncTask<Void, Void, Void> {

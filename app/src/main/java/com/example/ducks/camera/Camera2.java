@@ -2,12 +2,17 @@ package com.example.ducks.camera;
 
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.Application;
 import android.app.assist.AssistStructure;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.*;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.*;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.ExifInterface;
@@ -50,7 +55,6 @@ public class Camera2 extends AppCompatActivity {
     private ImageReader mImageReader;
     private Size previewSize;
     private File galleryFolder, galleryFolder2;
-
 
 
     private Size chooseOptimalSize(Size[] outputSizes, int width, int height) {
@@ -280,23 +284,28 @@ public class Camera2 extends AppCompatActivity {
     }
 
     public void fab(View view) {
-        //lock();
-        //FileOutputStream outputPhoto = null, outputPhoto2 = null;
-        /*try {
+        lock();
+        FileOutputStream outputPhoto = null, outputPhoto2 = null;
+        try {
             createImageGallery();
             outputPhoto = new FileOutputStream(galleryFolder);
             outputPhoto2 = new FileOutputStream(galleryFolder2);
             long t = System.currentTimeMillis();
-            textureView.getBitmap()
-                    .compress(Bitmap.CompressFormat.PNG, 100, outputPhoto);
-            t = System.currentTimeMillis() - t;
-            Thread.sleep(1000);
-            textureView.getBitmap()
-                    .compress(Bitmap.CompressFormat.PNG, 100, outputPhoto2);
+            Bitmap b = textureView.getBitmap();
+            Log.e("VAAA", String.valueOf(System.currentTimeMillis() - t));
+            Bitmap b1 = textureView.getBitmap();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            b.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            outputPhoto.write(byteArray);
+            stream = new ByteArrayOutputStream();
+            b1.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byteArray = stream.toByteArray();
+            outputPhoto2.write(byteArray);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            //unlock();
+            unlock();
             finish();
             try {
                 if (outputPhoto != null) {
@@ -305,7 +314,7 @@ public class Camera2 extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }*/
+        }
 
     }
 
