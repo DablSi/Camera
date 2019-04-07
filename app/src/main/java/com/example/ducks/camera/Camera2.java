@@ -196,6 +196,7 @@ public class Camera2 extends AppCompatActivity {
         handler = new Handler() {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                long t = System.currentTimeMillis();
                 if (msg.what == 1) {
                     bitmap = textureView.getBitmap();
                 } else if (msg.what == 2) {
@@ -204,6 +205,7 @@ public class Camera2 extends AppCompatActivity {
                 else {
                     finish();
                 }
+                Log.e("VAAAA", System.currentTimeMillis() - t + "");
             }
         };
 
@@ -323,11 +325,16 @@ public class Camera2 extends AppCompatActivity {
         protected Void doInBackground(Void... voids) {
             handler.sendEmptyMessage(1);
             try {
-                Thread.sleep(10);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             handler.sendEmptyMessage(2);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             FileOutputStream outputPhoto = null, outputPhoto2 = null;
             try {
                 createImageGallery();
