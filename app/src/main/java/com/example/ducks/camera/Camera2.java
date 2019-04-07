@@ -24,10 +24,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.*;
-import android.view.Display;
-import android.view.Surface;
-import android.view.TextureView;
-import android.view.View;
+import android.view.*;
 import android.widget.Button;
 
 import java.io.*;
@@ -36,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Camera2 extends AppCompatActivity {
@@ -43,6 +41,7 @@ public class Camera2 extends AppCompatActivity {
     private int cameraFacing;
     private TextureView.SurfaceTextureListener surfaceTextureListener;
     private String cameraId;
+    private Handler handler;
     private final int CAMERA_REQUEST_CODE = 1;
     private Handler backgroundHandler;
     private HandlerThread backgroundThread;
@@ -53,6 +52,7 @@ public class Camera2 extends AppCompatActivity {
     private CaptureRequest.Builder captureRequestBuilder;
     private CaptureRequest captureRequest;
     private ImageReader mImageReader;
+    private Bitmap bitmap, bitmap2;
     private Size previewSize;
     private File galleryFolder, galleryFolder2;
 
@@ -193,6 +193,20 @@ public class Camera2 extends AppCompatActivity {
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
 
+        handler = new Handler() {
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                if (msg.what == 1) {
+                    bitmap = textureView.getBitmap();
+                } else if (msg.what == 2) {
+                    bitmap2 = textureView.getBitmap();
+                }
+                else {
+                    finish();
+                }
+            }
+        };
+
         stateCallback = new CameraDevice.StateCallback() {
             @Override
             public void onOpened(CameraDevice cameraDevice) {
@@ -216,8 +230,8 @@ public class Camera2 extends AppCompatActivity {
         surfaceTextureListener = new TextureView.SurfaceTextureListener() {
             @Override
             public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-//                setUpCamera();
-//                openCamera();
+                setUpCamera();
+                openCamera();
             }
 
             @Override
@@ -284,38 +298,8 @@ public class Camera2 extends AppCompatActivity {
     }
 
     public void fab(View view) {
-        lock();
-        FileOutputStream outputPhoto = null, outputPhoto2 = null;
-        try {
-            createImageGallery();
-            outputPhoto = new FileOutputStream(galleryFolder);
-            outputPhoto2 = new FileOutputStream(galleryFolder2);
-            long t = System.currentTimeMillis();
-            Bitmap b = textureView.getBitmap();
-            Log.e("VAAA", String.valueOf(System.currentTimeMillis() - t));
-            Bitmap b1 = textureView.getBitmap();
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            b.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            outputPhoto.write(byteArray);
-            stream = new ByteArrayOutputStream();
-            b1.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byteArray = stream.toByteArray();
-            outputPhoto2.write(byteArray);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            unlock();
-            finish();
-            try {
-                if (outputPhoto != null) {
-                    outputPhoto.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
+        NewThread newThread = new NewThread();
+            newThread.execute();
     }
 
     private void fixDarkPreview() throws CameraAccessException {
@@ -330,6 +314,38 @@ public class Camera2 extends AppCompatActivity {
                             Range.create(15, 30));
                 }
             }
+        }
+    }
+
+    class NewThread extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            handler.sendEmptyMessage(1);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            handler.sendEmptyMessage(2);
+            FileOutputStream outputPhoto = null, outputPhoto2 = null;
+            try {
+                createImageGallery();
+                outputPhoto = new FileOutputStream(galleryFolder);
+                outputPhoto2 = new FileOutputStream(galleryFolder2);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+                outputPhoto.write(byteArray);
+                stream = new ByteArrayOutputStream();
+                bitmap2.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byteArray = stream.toByteArray();
+                outputPhoto2.write(byteArray);
+                handler.sendEmptyMessage(3);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 }

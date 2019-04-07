@@ -227,8 +227,6 @@ public class AndroidCameraApi extends AppCompatActivity {
                 public void onConfigureFailed(CameraCaptureSession session) {
                 }
             }, mBackgroundHandler);
-            t = System.currentTimeMillis() - t;
-            Log.e("VAAAA", t + "");
             cameraDevice.createCaptureSession(outputSurfaces, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(CameraCaptureSession session) {
