@@ -323,13 +323,15 @@ public class Camera2 extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            handler.sendEmptyMessage(1);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            handler.sendEmptyMessage(2);
+            long t = System.currentTimeMillis();
+            bitmap = textureView.getBitmap();
+//            try {
+//                Thread.sleep(0);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            Log.e("VAAAA", System.currentTimeMillis() - t + "");
+            bitmap2 = textureView.getBitmap();
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
@@ -348,7 +350,7 @@ public class Camera2 extends AppCompatActivity {
                 bitmap2.compress(Bitmap.CompressFormat.PNG, 100, stream);
                 byteArray = stream.toByteArray();
                 outputPhoto2.write(byteArray);
-                handler.sendEmptyMessage(3);
+                finish();
             } catch (Exception e) {
                 e.printStackTrace();
             }
