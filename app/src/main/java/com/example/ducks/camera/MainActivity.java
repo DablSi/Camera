@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 bitmap2 = Bitmap.createBitmap(bitmap2, 0, 0, bitmap2.getWidth(), bitmap2.getHeight(), matrix, true);
                 bitmap2 = Bitmap.createScaledBitmap(bitmap2, xs, ys, false);
 
+
                 LinkedList<Point> linkedList = new LinkedList<>();
 
                 for (int i = 0; i < bitmap.getHeight(); i++) {
@@ -123,10 +124,7 @@ public class MainActivity extends AppCompatActivity {
                             int need2 = 0xff303f9f;
                             float[] hsv3 = new float[3];
                             Color.RGBToHSV(Color.red(need2), Color.green(need2), Color.blue(need2), hsv3);
-                            if (Math.abs(hsv[0] - hsv3[0]) <= 16 && Math.abs(hsv[1] - hsv3[1]) <= 0.35 && Math.abs(hsv[2] - hsv3[2]) <= 0.35
-                                    && Math.abs(Color.red(is) - Color.red(need2)) <= 95
-                                    && Math.abs(Color.blue(is) - Color.blue(need2)) <= 95
-                                    && Math.abs(Color.green(is) - Color.green(need2)) <= 95) {
+                            if (Math.abs(hsv[0] - hsv3[0]) <= 16 && Math.abs(hsv[1] - hsv3[1]) <= 0.35 && Math.abs(hsv[2] - hsv3[2]) <= 0.35) {
                                 bitmap2.setPixel(j, i, Color.GREEN);
                                 linkedList.add(new Point(i, j));
                             }

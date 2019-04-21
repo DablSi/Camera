@@ -41,7 +41,6 @@ public class Camera2 extends AppCompatActivity {
     private int cameraFacing;
     private TextureView.SurfaceTextureListener surfaceTextureListener;
     private String cameraId;
-    private Handler handler;
     private final int CAMERA_REQUEST_CODE = 1;
     private Handler backgroundHandler;
     private HandlerThread backgroundThread;
@@ -192,22 +191,6 @@ public class Camera2 extends AppCompatActivity {
 
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
-
-        handler = new Handler() {
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                long t = System.currentTimeMillis();
-                if (msg.what == 1) {
-                    bitmap = textureView.getBitmap();
-                } else if (msg.what == 2) {
-                    bitmap2 = textureView.getBitmap();
-                }
-                else {
-                    finish();
-                }
-                Log.e("VAAAA", System.currentTimeMillis() - t + "");
-            }
-        };
 
         stateCallback = new CameraDevice.StateCallback() {
             @Override
